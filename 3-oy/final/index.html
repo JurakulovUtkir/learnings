@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <script></script>
+    <title>ToDo</title>
+  </head>
+  <body>
+    <div class="container">
+      <a href="./index.html"><img src="./icons/Logo.png" alt="logo" /></a>
+      <form class="input-container">
+        <input
+          type="text"
+          id="taskInput"
+          name="task"
+          placeholder="Enter task..."
+        />
+        <button type="submit" class="btn-add" id="addTaskBtn">
+          <img src="./icons/plus.svg" alt="plus" />
+          <span>Add</span>
+        </button>
+      </form>
+
+      <div class="filter-container">
+        <button data-toggle="modal" data-target="#filterModal">
+          <img src="./icons/sort-amount-down.svg" alt="filter" />
+        </button>
+      </div>
+
+      <!-- Task Container -->
+      <ul class="task-container">
+        <!-- Tasks will be added dynamically here -->
+        <!-- <li class="task">
+          <div class="task-body">
+            <input type="checkbox" checked />
+            <p class="task-text">Task 1</p>
+          </div>
+          <button class="btn-edit">
+            <img src="./icons/edit.svg" alt="pencil" />
+          </button>
+          <button class="btn-delete">
+            <img src="./icons/delete.svg" alt="trash" />
+          </button>
+        </li> -->
+      </ul>
+
+      <!-- Pagination -->
+      <nav class="pagination">
+        <ul id="paginationLinks">
+          <li>
+            <span class="all">Umumiy soni: <span id="taskCount">0</span></span>
+          </li>
+          <li>
+            <select name="pages" id="pages">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="15">15</option>
+            </select>
+          </li>
+          <!-- Page links will be dynamically added here -->
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Filter Modal -->
+    <div
+      class="modal fade"
+      id="filterModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="filterModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="filterModalLabel">Filter Tasks</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <label for="statusFilter">Filter by Status</label>
+            <select id="statusFilter" class="form-control">
+              <option value="all">All</option>
+              <option value="completed">Completed</option>
+              <option value="notCompleted">Not Completed</option>
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="button" class="btn btn-primary" id="applyFilterBtn">
+              Apply Filter
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="./script.js"></script>
+    <!-- <script>
+      const taskList = [];
+      let taskCount = 0;
+      let tasksPerPage = 5; // Default number of tasks per page
+      let currentPage = 1;
+
+      // Handle Add Task
+      document
+        .getElementById("addTaskBtn")
+        .addEventListener("click", function () {
+          const taskInput = document.getElementById("taskInput");
+          const taskText = taskInput.value.trim();
+          if (taskText) {
+            const task = {
+              text: taskText,
+              date: new Date().toISOString().split("T")[0], // Current date in YYYY-MM-DD format
+              completed: false,
+            };
+            taskList.push(task);
+            taskInput.value = ""; // Clear input field
+            taskCount++;
+            updateTaskList();
+            updateTaskCount();
+            updatePagination();
+          }
+        });
+
+      // Handle Checkbox Opacity Change
+      function toggleCheckboxOpacity(checkbox, row) {
+        if (checkbox.checked) {
+          row.style.opacity = "0.5";
+        } else {
+          row.style.opacity = "1";
+        }
+      }
+
+      // Handle Filter by Completion Status
+      document
+        .getElementById("applyFilterBtn")
+        .addEventListener("click", function () {
+          const selectedStatus = document.getElementById("statusFilter").value;
+          let filteredTasks = taskList;
+
+          if (selectedStatus === "completed") {
+            filteredTasks = taskList.filter((task) => task.completed);
+          } else if (selectedStatus === "notCompleted") {
+            filteredTasks = taskList.filter((task) => !task.completed);
+          }
+
+          updateTaskList(filteredTasks);
+          $("#filterModal").modal("hide");
+        });
+
+      // Handle Delete Task
+      function handleDeleteTask(index) {
+        taskList.splice(index, 1);
+        taskCount--;
+        updateTaskList();
+        updateTaskCount();
+        updatePagination();
+      }
+
+      // Handle Edit Task (this just changes the text for simplicity)
+      function handleEditTask(index) {
+        const newText = prompt("Edit Task:", taskList[index].text);
+        if (newText !== null) {
+          taskList[index].text = newText;
+          updateTaskList();
+        }
+      }
+
+      // Update Task List
+      function updateTaskList(filteredTasks = taskList) {
+        const taskTable = document.getElementById("taskTable");
+        taskTable.innerHTML = ""; // Clear existing tasks
+        const startIndex = (currentPage - 1) * tasksPerPage;
+        const pagedTasks = filteredTasks.slice(
+          startIndex,
+          startIndex + tasksPerPage
+        );
+
+        pagedTasks.forEach((task, index) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>
+                <input type="checkbox" id="checkbox${index}" ${
+            task.completed ? "checked" : ""
+          } />
+                <label for="checkbox${index}"></label>
+            </td>
+            <td><p>${task.text}</p></td>
+            <td><button class="editBtn" data-index="${index}"><img src="./icons/edit.svg" alt="edit" /></button></td>
+            <td><button class="deleteBtn" data-index="${index}"><img src="./icons/delete.svg" alt="delete" /></button></td>
+        `;
+          const checkbox = row.querySelector(`#checkbox${index}`);
+          checkbox.addEventListener("change", function () {
+            task.completed = checkbox.checked;
+            toggleCheckboxOpacity(checkbox, row);
+          });
+
+          // Add event listeners for edit and delete buttons
+          const editBtn = row.querySelector(".editBtn");
+          editBtn.addEventListener("click", () => handleEditTask(index));
+          const deleteBtn = row.querySelector(".deleteBtn");
+          deleteBtn.addEventListener("click", () => handleDeleteTask(index));
+
+          taskTable.appendChild(row);
+          toggleCheckboxOpacity(checkbox, row); // Apply initial opacity based on checkbox status
+        });
+      }
+
+      // Update Task Count
+      function updateTaskCount() {
+        document.getElementById("taskCount").textContent = taskCount;
+      }
+
+      // Update Pagination
+      function updatePagination() {
+        const paginationLinks = document.getElementById("paginationLinks");
+        const totalPages = Math.ceil(taskCount / tasksPerPage);
+        let pageLinksHTML = "";
+
+        for (let i = 1; i <= totalPages; i++) {
+          pageLinksHTML += `<li><a href="#" class="page-link" data-page="${i}">${i}</a></li>`;
+        }
+
+        paginationLinks.innerHTML = `
+        <li><span class="all">Umumiy soni: <span id="taskCount">${taskCount}</span></span></li>
+        <li>
+            <select name="pages" id="pages">
+                <option value="5" ${
+                  tasksPerPage === 5 ? "selected" : ""
+                }>5</option>
+                <option value="10" ${
+                  tasksPerPage === 10 ? "selected" : ""
+                }>10</option>
+                <option value="15" ${
+                  tasksPerPage === 15 ? "selected" : ""
+                }>15</option>
+            </select>
+        </li>
+        ${pageLinksHTML}
+    `;
+
+        // Add click event to page links
+        document.querySelectorAll(".page-link").forEach((pageLink) => {
+          pageLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            currentPage = parseInt(pageLink.getAttribute("data-page"));
+            updateTaskList();
+          });
+        });
+
+        // Handle page selection change
+        document
+          .getElementById("pages")
+          .addEventListener("change", function () {
+            tasksPerPage = parseInt(this.value);
+            currentPage = 1; // Reset to page 1 when changing items per page
+            updateTaskList();
+            updatePagination();
+          });
+      }
+
+      // Initialize task list on page load
+      updateTaskList();
+      updatePagination();
+    </script> -->
+  </body>
+</html>
